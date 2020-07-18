@@ -32,14 +32,22 @@ app.post("/create", async (req, res) => {
     return;
   }
 
-  const entry = await create(req.body);
+  let entry;
+
+  try {
+    entry = await create(req.body);
+  } catch (error) {
+    res.statusCode = 502;
+    res.end(JSON.stringify(error.response.data));
+    return;
+  }
 
   const short: string = hash(entry).slice(0, 8);
   const owner = key;
 
   addEntry({ short, owner, ...entry, subscribers: [] });
 
-  res.end();
+  res.end(JSON.stringify({ ...entry, short }));
 });
 
 export default app;
