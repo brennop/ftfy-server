@@ -1,6 +1,9 @@
 import axios from "axios";
+import { Entry } from "../app";
 
-export const create = (entry, workspace) =>
+const workspace = process.env.WORKSPACE || "";
+
+export const create = (entry: Entry) =>
   axios
     .post(`/workspaces/${workspace}/time-entries`, entry)
     .then((res) => res.data);
