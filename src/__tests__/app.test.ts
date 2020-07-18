@@ -9,11 +9,22 @@ describe("creating a new time entry", () => {
   });
 
   it("bails if key is missing", () => {
+    const errorMessage = { message: "Missing API key" };
+
+    mockAxios.post.mockImplementationOnce(() =>
+      Promise.reject({
+        response: {
+          data: errorMessage,
+          status: 401,
+        },
+      })
+    );
+
     return request(app.handler)
       .post("/create")
       .then((response) => {
         expect(response.statusCode).toBe(401);
-        expect(response.text).toBe("Missing API key");
+        expect(response.text).toBe(JSON.stringify(errorMessage));
       });
   });
 
@@ -27,7 +38,9 @@ describe("creating a new time entry", () => {
       .set("X-Api-Key", "abc123")
       .send(timeEntry)
       .then(() => {
-        expect(mockAxios.post).toBeCalledWith(expect.anything(), timeEntry);
+        expect(mockAxios.post).toBeCalledWith(expect.anything(), timeEntry, {
+          headers: { "X-Api-Key": "abc123" },
+        });
       });
   });
 
@@ -74,9 +87,10 @@ describe("creating a new time entry", () => {
 
   it("it bails on api call error", () => {
     const timeEntry: Entry = { description: "New time entry", start: "123" };
+    const errorMessage = { error: "Api error" };
 
     mockAxios.post.mockImplementationOnce(() =>
-      Promise.reject({ response: { data: { error: "Api error" } } })
+      Promise.reject({ response: { data: errorMessage, status: 500 } })
     );
 
     return request(app.handler)
@@ -84,8 +98,8 @@ describe("creating a new time entry", () => {
       .set("X-Api-Key", "abc123")
       .send(timeEntry)
       .then((response) => {
-        expect(response.statusCode).toBe(502);
-        expect(response.text).toBe(JSON.stringify({ error: "Api error" }));
+        expect(response.statusCode).toBe(500);
+        expect(response.text).toBe(JSON.stringify(errorMessage));
       });
   });
 });

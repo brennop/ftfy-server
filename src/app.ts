@@ -1,8 +1,6 @@
 import polka from "polka";
 import { json } from "body-parser";
-import { create } from "./services/api";
-import { addEntry } from "./entries";
-import hash from "object-hash";
+import { createHandler } from "./handlers";
 
 export type Entry = {
   start: string;
@@ -23,32 +21,15 @@ app.use(json());
 //
 // CREATE
 //
-app.post("/create", async (req, res) => {
-  const key = req.headers["x-api-key"];
 
-  if (!key) {
-    res.statusCode = 401;
-    res.end("Missing API key");
-    return;
-  }
-
-  let entry;
-
-  try {
-    entry = await create(req.body);
-  } catch (error) {
-    res.statusCode = 502;
-    res.end(JSON.stringify(error.response.data));
-    return;
-  }
-
-  const short: string = hash(entry).slice(0, 8);
-  const owner = key;
-
-  addEntry({ short, owner, ...entry, subscribers: [] });
-
-  res.end(JSON.stringify({ ...entry, short }));
-});
+app.post("/create", (req, res) =>
+  createHandler(req)
+    .then((data) => res.end(data))
+    .catch((error) => {
+      res.statusCode = error.response.status;
+      res.end(JSON.stringify(error.response.data));
+    })
+);
 
 export default app;
 
