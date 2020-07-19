@@ -2,6 +2,7 @@ import hash from "object-hash";
 import { Request } from "polka";
 import { addEntry, getEntry, subscribe } from "./entries";
 import { create } from "./services/api";
+import { ServerResponse } from "http";
 
 export async function createHandler(req: Request) {
   const key = req.headers["x-api-key"] as string;
@@ -16,19 +17,29 @@ export async function createHandler(req: Request) {
   return JSON.stringify({ ...entry, short });
 }
 
-export async function subscribeHandler(req: Request) {
+export async function subscribeHandler(req: Request, res: ServerResponse) {
   const key = req.headers["x-api-key"] as string;
 
   const { short } = req.query;
 
-  const { id, owner, subscribers, short: undefined, ...entry } = getEntry(
-    short
-  );
+  const currentEntry = getEntry(short);
 
-  const realEntry = await create(entry, key);
+  if (!currentEntry) {
+    res.statusCode = 422;
+    res.end(JSON.stringify({ error: "Invalid entry identifier" }));
+    return;
+  }
 
-  subscribe(short, key);
+  const { owner, subscribers, short: undefined, ...entry } = currentEntry;
 
-  return JSON.stringify({ ...entry, short });
+  if (!currentEntry.subscribers.includes(key)) {
+    subscribe(short, key);
+
+    const realEntry = await create(entry, key);
+  }
+
+  res.end(JSON.stringify({ ...entry, short }));
 }
+
+export async function updateHandler(req: Request) {}
 

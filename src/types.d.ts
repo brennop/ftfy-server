@@ -2,7 +2,6 @@ type Entry = {
   start: string;
   end?: string;
   description: string;
-  id: string;
 };
 
 type FullEntry = Entry & {

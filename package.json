@@ -32,7 +32,8 @@
     }
   },
   "scripts": {
-    "dev": "nodemon index.ts",
+    "dev": "nodemon src/server.ts",
     "test": "jest --watch"
   }
 }
+

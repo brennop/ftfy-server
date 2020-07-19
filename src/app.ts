@@ -14,14 +14,7 @@ app.post("/create", (req, res) =>
     })
 );
 
-app.post("/subscribe", (req, res) =>
-  subscribeHandler(req)
-    .then((data) => res.end(data))
-    .catch((error) => {
-      res.statusCode = error.response.status;
-      res.end(JSON.stringify(error.response.data));
-    })
-);
+app.post("/subscribe", (req, res) => subscribeHandler(req, res));
 
 export default app;
 
