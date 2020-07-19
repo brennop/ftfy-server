@@ -1,10 +1,11 @@
 import app from "../app";
 import request from "supertest";
 import mockAxios from "axios";
-import entries, { removeEntry } from "../entries";
+import entries, { removeEntry, addEntry, getEntry } from "../entries";
 
 describe("creating a new time entry", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     entries.forEach((entry) => removeEntry(entry.short));
   });
 
@@ -101,6 +102,57 @@ describe("creating a new time entry", () => {
         expect(response.statusCode).toBe(500);
         expect(response.text).toBe(JSON.stringify(errorMessage));
       });
+  });
+});
+
+describe("subscribe", () => {
+  const entry: Entry = { start: "1600", description: "test entry", id: "0001" };
+  const { id, ...withoutId } = entry;
+  const short = "abcd";
+
+  beforeAll(() => {
+    addEntry({
+      ...entry,
+      short,
+      owner: "xyz",
+      subscribers: ["someone", "someone else"],
+    });
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("clones the given entry", async () => {
+    mockAxios.post.mockImplementationOnce(() =>
+      Promise.resolve({ data: { ...entry, id: "123456" } })
+    );
+
+    return request(app.handler)
+      .post(`/subscribe?short=${short}`)
+      .set("X-Api-Key", "abc123")
+      .then(() => {
+        expect(mockAxios.post).toBeCalledWith(
+          expect.anything(),
+          withoutId,
+          expect.anything()
+        );
+      });
+  });
+
+  it("adds itself to subscribers list", async () => {
+    mockAxios.post.mockImplementationOnce(() =>
+      Promise.resolve({ data: { ...entry, id: "123456" } })
+    );
+
+    const key = "abc123";
+
+    await request(app.handler)
+      .post(`/subscribe?short=${short}`)
+      .set("X-Api-Key", key);
+
+    const { subscribers } = getEntry(short);
+    expect(subscribers).toContain(key);
   });
 });
 
