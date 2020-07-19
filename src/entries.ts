@@ -1,5 +1,3 @@
-import { FullEntry } from "./app";
-
 let entries: FullEntry[] = [];
 
 export const addEntry = (entry: FullEntry) => entries.push(entry);

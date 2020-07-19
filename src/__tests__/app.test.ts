@@ -1,4 +1,4 @@
-import app, { Entry } from "../app";
+import app from "../app";
 import request from "supertest";
 import mockAxios from "axios";
 import entries, { removeEntry } from "../entries";
