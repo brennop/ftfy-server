@@ -14,7 +14,7 @@ app.post("/create", (req, res) =>
     })
 );
 
-app.post("/subscribe", (req, res) => subscribeHandler(req, res));
+app.post("/subscribe", subscribeHandler);
 
 export default app;
 
