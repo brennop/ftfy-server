@@ -12,7 +12,7 @@ export async function createHandler(req: Request) {
   const short: string = hash(entry).slice(0, 8);
   const owner = key;
 
-  addEntry({ short, owner, ...entry, subscribers: [] });
+  addEntry({ short, owner, ...entry, subscribers: [key] });
 
   return JSON.stringify({ ...entry, short });
 }

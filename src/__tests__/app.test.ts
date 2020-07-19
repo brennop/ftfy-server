@@ -66,8 +66,8 @@ describe("creating a new time entry", () => {
         const entries = getEntries();
         expect(entries).toHaveLength(1);
         expect(entries[0]).toHaveProperty("short");
-        expect(entries[0]).toHaveProperty("owner", "abc123");
-        expect(entries[0]).toHaveProperty("subscribers", []);
+        expect(entries[0]).toHaveProperty("owner");
+        expect(entries[0]).toHaveProperty("subscribers");
       });
   });
 
@@ -106,8 +106,27 @@ describe("creating a new time entry", () => {
       .set("X-Api-Key", "abc123")
       .send(timeEntry)
       .then((response) => {
-        expect(response.statusCode).toBe(500);
+        expect(response.status).toBe(500);
         expect(response.text).toBe(JSON.stringify(errorMessage));
+      });
+  });
+
+  it("adds itself to subscribers", async () => {
+    const timeEntry: Entry = { description: "New time entry", start: "123" };
+    const key = "abc123";
+
+    mockAxios.post.mockImplementationOnce(() =>
+      Promise.resolve({ data: { ...timeEntry, id: "123456" } })
+    );
+
+    await request(app.handler)
+      .post("/create")
+      .set("X-Api-Key", key)
+      .send(timeEntry)
+      .then((response) => {
+        const { short } = JSON.parse(response.text);
+        const { subscribers } = getEntry(short);
+        expect(subscribers).toContain(key);
       });
   });
 });
