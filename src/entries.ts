@@ -1,9 +1,10 @@
 let entries: FullEntry[] = [];
 
-export const addEntry = (entry: FullEntry) => entries.push(entry);
+//
+// mutate
+//
 
-export const getEntry = (short: string) =>
-  entries.find((entry) => entry.short === short);
+export const addEntry = (entry: FullEntry) => entries.push(entry);
 
 export const subscribe = (short: string, key: string) => {
   entries = entries.map((entry) =>
@@ -16,6 +17,16 @@ export const subscribe = (short: string, key: string) => {
 export const removeEntry = (short: string) => {
   entries = entries.filter((entry) => entry.short !== short);
 };
+
+//
+// query
+//
+
+// prevent stale closure
+export const getEntries = () => entries;
+
+export const getEntry = (short: string) =>
+  getEntries().find((entry) => entry.short === short);
 
 export default entries;
 
